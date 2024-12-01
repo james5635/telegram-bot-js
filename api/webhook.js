@@ -10,7 +10,7 @@ const TelegramBot = require("node-telegram-bot-api");
  *
  * @param {string} text
  */
-function handle_response(text) {
+async function handle_response(text) {
   if (text === "/start") {
     return "Hello, I am telegram bot. Try sending me some message.";
   } else if (text === "/help") {
@@ -44,28 +44,41 @@ module.exports = async (request, response) => {
 
     // Ensure that this is a message being sent
     if (body.message) {
+      console.log(`message: ${body.message}`);
       // Retrieve the ID for this chat
       // and the text that the user sent
       /**
        * @type {{chat: any, text: string}}
        */
       let {
+        message_id,
         chat: { id },
         text,
       } = body.message;
-
       let message;
-      if (body.message.chat.type === "group") {
+      console.log(`type: ${body.message.chat.type}`);
+      console.log(`text: ${text}`);
+      if (
+        body.message.chat.type === "group" ||
+        body.message.chat.type === "supergroup"
+      ) {
+        console.log("checking group...");
+        console.log(
+          `text included: ${text.includes(process.env.BOT_USERNAME)}`
+        );
         if (text.includes(process.env.BOT_USERNAME)) {
           text = text.replace(process.env.BOT_USERNAME, "").trim();
         } else {
-          return;
+          console.log("sending empty...");
+          await bot.sendMessage(id, "", { parse_mode: "Markdown" });
         }
       }
-      message = handle_response(text);
+      message = await handle_response(text);
 
       // Send our new message back in Markdown and
       // wait for the request to finish
+      console.log(`respone_text: ${message}`);
+      console.log("sending ...");
       await bot.sendMessage(id, message, { parse_mode: "Markdown" });
     }
   } catch (error) {
@@ -78,5 +91,6 @@ module.exports = async (request, response) => {
   // Acknowledge the message with Telegram
   // by sending a 200 HTTP status code
   // The message here doesn't matter.
+  console.log("respone: OK");
   response.send("OK");
 };
