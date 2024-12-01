@@ -6,6 +6,21 @@ require("dotenv").config();
 // Require our Telegram helper package
 const TelegramBot = require("node-telegram-bot-api");
 
+/**
+ *
+ * @param {string} text
+ */
+function handle_response(text) {
+  text = text.toLowerCase().trim();
+  if (text.includes("hello")) {
+    return "Hey there";
+  } else if (text.includes("how are you")) {
+    return "I am good";
+  } else if (text.includes("I love Javascript")) {
+    return "remember to subscribe";
+  }
+  return `✅ Thanks for your message: *"${text}"*\nHave a great day! 👋🏻`;
+}
 // Export as an asynchronous function
 // We'll wait until we've responded to the user
 module.exports = async (request, response) => {
@@ -27,10 +42,16 @@ module.exports = async (request, response) => {
         chat: { id },
         text,
       } = body.message;
-
-      // Create a message to send back
-      // We can use Markdown inside this
-      const message = `✅ Thanks for your message: *"${text}"*\nHave a great day! 👋🏻`;
+      let message;
+      if (text === "/start") {
+        message = "Hello, I am telegram bot. Try sending me some message.";
+      } else if (text === "/help") {
+        message = "I am telegram bot. I can help you.";
+      } else if (text == "/custom") {
+        message = "This is custom command";
+      } else {
+        message = handle_response(text);
+      }
 
       // Send our new message back in Markdown and
       // wait for the request to finish
