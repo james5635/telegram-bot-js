@@ -11,12 +11,20 @@ const TelegramBot = require("node-telegram-bot-api");
  * @param {string} text
  */
 function handle_response(text) {
+  if (text === "/start") {
+    return "Hello, I am telegram bot. Try sending me some message.";
+  } else if (text === "/help") {
+    return "I am telegram bot. I can help you.";
+  } else if (text == "/custom") {
+    return "This is custom command";
+  }
+
   text = text.toLowerCase().trim();
   if (text.includes("hello")) {
     return "Hey there";
   } else if (text.includes("how are you")) {
     return "I am good";
-  } else if (text.includes("I love Javascript")) {
+  } else if (text.includes("i love javascript")) {
     return "remember to subscribe";
   }
   return `✅ Thanks for your message: *"${text}"*\nHave a great day! 👋🏻`;
@@ -38,20 +46,23 @@ module.exports = async (request, response) => {
     if (body.message) {
       // Retrieve the ID for this chat
       // and the text that the user sent
-      const {
+      /**
+       * @type {{chat: any, text: string}}
+       */
+      let {
         chat: { id },
         text,
       } = body.message;
+
       let message;
-      if (text === "/start") {
-        message = "Hello, I am telegram bot. Try sending me some message.";
-      } else if (text === "/help") {
-        message = "I am telegram bot. I can help you.";
-      } else if (text == "/custom") {
-        message = "This is custom command";
-      } else {
-        message = handle_response(text);
+      if (body.message.chat.type === "group") {
+        if (text.includes(process.env.BOT_USERNAME)) {
+          text = text.replace(process.env.BOT_USERNAME, "").trim();
+        } else {
+          return;
+        }
       }
+      message = handle_response(text);
 
       // Send our new message back in Markdown and
       // wait for the request to finish
