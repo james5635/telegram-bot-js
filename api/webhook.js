@@ -27,11 +27,11 @@ async function gemini_response(text) {
  */
 async function handle_response(text) {
   if (text === "/start") {
-    return "Hello, I am telegram bot. Try sending me some message.";
+    return "Hello, I am telegram bot😀. Try sending me some message.💬";
   } else if (text === "/help") {
-    return "I am telegram bot. I can help you.";
+    return "I am telegram bot. I can help you.😊";
   } else if (text === "/custom") {
-    return "This is custom command";
+    return "This is custom command😎";
   }
 
   const LowerText = text.toLowerCase().trim();
