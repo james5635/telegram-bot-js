@@ -5,6 +5,21 @@ process.env.NTBA_FIX_319 = "test";
 require("dotenv").config();
 // Require our Telegram helper package
 const TelegramBot = require("node-telegram-bot-api");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+const DisableMention = true;
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+/**
+ *
+ * @param {string} text
+ */
+async function gemini_response(text) {
+  const result = await model.generateContent(text);
+  return result.response.text();
+}
 
 /**
  *
@@ -15,19 +30,29 @@ async function handle_response(text) {
     return "Hello, I am telegram bot. Try sending me some message.";
   } else if (text === "/help") {
     return "I am telegram bot. I can help you.";
-  } else if (text == "/custom") {
+  } else if (text === "/custom") {
     return "This is custom command";
   }
 
-  text = text.toLowerCase().trim();
-  if (text.includes("hello")) {
-    return "Hey there";
-  } else if (text.includes("how are you")) {
-    return "I am good";
-  } else if (text.includes("i love javascript")) {
-    return "remember to subscribe";
+  const LowerText = text.toLowerCase().trim();
+  if (
+    LowerText === "hello" ||
+    LowerText === "hello." ||
+    LowerText === "hi" ||
+    LowerText === "hi."
+  ) {
+    return `Hey there😅, ${LowerText}👋`;
+  } else if (LowerText === "how are you?" || LowerText === "how are you") {
+    return "Feeling good😇. How about you?";
+  } else if (
+    LowerText === "i love javascript" ||
+    LowerText === "i love javascript."
+  ) {
+    return "remember to learn javascript✅";
   }
-  return `✅ Thanks for your message: *"${text}"*\nHave a great day! 👋🏻`;
+  // return `✅ Thanks for your message: *"${text}"*\nHave a great day! 👋🏻`;
+  // calling gemini response with text otherwise
+  return await gemini_response(text);
 }
 // Export as an asynchronous function
 // We'll wait until we've responded to the user
@@ -55,6 +80,7 @@ module.exports = async (request, response) => {
         chat: { id },
         text,
       } = body.message;
+      let random = Math.floor(Math.random() * 2); // [0, 1]
       let message;
       console.log(`type: ${body.message.chat.type}`);
       console.log(`text: ${text}`);
@@ -66,7 +92,10 @@ module.exports = async (request, response) => {
         console.log(
           `text included: ${text.includes(process.env.BOT_USERNAME)}`
         );
-        if (text.includes(process.env.BOT_USERNAME)) {
+        if (
+          (text.includes(process.env.BOT_USERNAME) || DisableMention) &&
+          random === 1
+        ) {
           text = text.replace(process.env.BOT_USERNAME, "").trim();
         } else {
           console.log("sending empty...");
