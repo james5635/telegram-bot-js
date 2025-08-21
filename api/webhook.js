@@ -7,7 +7,8 @@ require("dotenv").config();
 const TelegramBot = require("node-telegram-bot-api");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const DisableMention = true;
+// const DisableMention = true;
+const DisableMention = false;
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -80,7 +81,8 @@ module.exports = async (request, response) => {
         chat: { id },
         text,
       } = body.message;
-      let random = Math.floor(Math.random() * 2); // [0, 1]
+      // let random = Math.floor(Math.random() * 2); // [0, 1]
+      let random = 1; // always 1
       let message;
       console.log(`type: ${body.message.chat.type}`);
       console.log(`text: ${text}`);
